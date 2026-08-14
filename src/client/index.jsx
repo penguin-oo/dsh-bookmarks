@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import {
   IconArchiveOutline20,
   IconCheckOutline16,
+  IconChevronLeftOutline14,
   IconCloseOutline16,
   IconDownloadOutline16,
   IconEditOutline16,
@@ -44,6 +45,8 @@ const cssText = `
 .dshbm_badge{position:absolute;top:1px;right:1px;background:#4d6bfe;color:#fff;border-radius:7px;font-size:10px;line-height:13px;min-width:13px;text-align:center;padding:0 2px}
 .dshbm_overlay{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;background:var(--dsw-alias-bg-base);pointer-events:auto;color:var(--dsw-alias-label-primary)}
 .dshbm_head{display:flex;align-items:center;gap:10px;padding:16px 32px;background:var(--dsw-alias-bg-layer-1);border-bottom:1px solid var(--dsw-alias-border-l2)}
+.dshbm_back{display:inline-flex;align-items:center;gap:4px;cursor:pointer;background:0 0;border:none;border-radius:8px;padding:5px 10px 5px 6px;color:var(--dsw-alias-label-secondary);font-size:13px;font-family:inherit}
+.dshbm_back:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .dshbm_headIcon{color:#4d6bfe;display:inline-flex}
 .dshbm_title{flex:1;font-size:17px;font-weight:600;color:var(--dsw-alias-label-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dshbm_count{font-size:12px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-2);border-radius:10px;padding:2px 10px;line-height:18px}
@@ -94,6 +97,7 @@ const css = {
   badge: "dshbm_badge",
   overlay: "dshbm_overlay",
   head: "dshbm_head",
+  back: "dshbm_back",
   headIcon: "dshbm_headIcon",
   title: "dshbm_title",
   count: "dshbm_count",
@@ -146,6 +150,7 @@ const zh = {
   "tags.placeholder": "标签，用逗号分隔（可选）",
   "tags.aria": "收藏标签",
   "center.title": "收藏中心",
+  "center.back": "返回",
   "center.empty": "还没有收藏。把鼠标移到某条 AI 回复上，点归档图标即可收藏。",
   "center.search": "搜索收藏…",
   "center.all": "全部",
@@ -178,6 +183,7 @@ const en = {
   "tags.placeholder": "Tags, comma separated (optional)",
   "tags.aria": "Bookmark tags",
   "center.title": "Bookmarks",
+  "center.back": "Back",
   "center.empty": "No bookmarks yet. Hover an assistant reply and click the archive icon to bookmark it.",
   "center.search": "Search bookmarks…",
   "center.all": "All",
@@ -729,6 +735,10 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
   return (
     <div className={css.overlay} role="dialog" aria-label={t("center.title")}>
       <div className={css.head}>
+        <button type="button" className={css.back} onClick={onClose}>
+          <IconChevronLeftOutline14 />
+          <span>{t("center.back")}</span>
+        </button>
         <span className={css.headIcon}>
           <IconArchiveOutline20 size={18} />
         </span>
@@ -960,7 +970,10 @@ async function apply(ctx) {
           ensure: () => store.ensure(),
           update: (sessionId, messageId, note, tags) => store.update(sessionId, messageId, note, tags),
           remove: (sessionId, messageId) => store.remove(sessionId, messageId),
-          jumpTo: (sessionId) => ctx.sessions.open(sessionId),
+          jumpTo: (sessionId) => {
+            centerOpen.set(false);
+            ctx.sessions.open(sessionId);
+          },
         }),
       },
       BookmarkCenterEntry,
