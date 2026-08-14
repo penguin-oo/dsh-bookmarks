@@ -1,0 +1,16 @@
+# dsh-bookmarks bundle patch.
+#
+# One row hosts both halves of the plugin: the node half provides the
+# `bookmarks` Remote service over the storage domain, and the package's
+# `dsh.client` declaration adds the browser half to the web roster
+# (served at /plugins/dsh-bookmarks/client.js).
+#
+# A patch replaces the targeted row's whole `config`, so restate every key.
+
+- insert:
+    - id: bookmarks
+      name: 'dsh-bookmarks'
+      config:
+        maxNoteBytes: 4096
+        maxSnippetChars: 300
+        maxTags: 8
