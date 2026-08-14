@@ -8,8 +8,14 @@ import { join } from "node:path";
 import puppeteer from "puppeteer-core";
 
 const BASE = process.env.DSH_E2E_BASE ?? "http://127.0.0.1:3738";
-const WORKSPACE = process.env.DSH_E2E_WORKSPACE ?? "YZ_study";
-const SESSION_TITLE = process.env.DSH_E2E_SESSION_TITLE ?? "高三物理备课任务移交说明";
+// Both values are REQUIRED and intentionally have no defaults: never bake a
+// real workspace or session title into the repository.
+const WORKSPACE = process.env.DSH_E2E_WORKSPACE;
+const SESSION_TITLE = process.env.DSH_E2E_SESSION_TITLE;
+if (!WORKSPACE || !SESSION_TITLE) {
+  console.error("DSH_E2E_WORKSPACE and DSH_E2E_SESSION_TITLE are required");
+  process.exit(2);
+}
 const DEBUG_PORT = 9222;
 const EDGE = process.env.DSH_E2E_BROWSER ?? "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
 const PROFILE_DIR = join(process.env.TEMP ?? ".", "dsh-e2e-edge-profile");
