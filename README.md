@@ -1,5 +1,7 @@
 # dsh-bookmarks
 
+[![Awesome DSH Plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com/) [![ci](https://github.com/penguin-oo/dsh-bookmarks/actions/workflows/ci.yml/badge.svg)](https://github.com/penguin-oo/dsh-bookmarks/actions/workflows/ci.yml)
+
 Bookmark assistant replies in [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH) Web UI: bookmark any finalized assistant reply with a note and tags, browse every bookmark from every session in one center panel, and export them to Markdown in one click.
 
 [中文说明](./README.zh.md)

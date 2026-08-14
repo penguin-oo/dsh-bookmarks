@@ -1,5 +1,7 @@
 # dsh-bookmarks
 
+[![Awesome DSH Plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com/) [![ci](https://github.com/penguin-oo/dsh-bookmarks/actions/workflows/ci.yml/badge.svg)](https://github.com/penguin-oo/dsh-bookmarks/actions/workflows/ci.yml)
+
 给 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）Web 界面加「回复收藏夹」：收藏任意一条已完成的 AI 回复（可加备注和标签），在统一的收藏中心里跨会话浏览、搜索、筛选，一键导出 Markdown。
 
 [English](./README.md)
