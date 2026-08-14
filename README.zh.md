@@ -6,6 +6,12 @@
 
 [English](./README.md)
 
+## 截图
+
+![回复旁的收藏按钮](docs/screenshot-actions.png)
+
+![独立的收藏中心界面](docs/screenshot-center.png)
+
 ## 功能
 
 - **逐条收藏** — 每条已定稿的 AI 回复旁边有一个归档按钮（就在 👍/👎 反馈按钮旁），点击收藏，并可内联编辑备注与逗号分隔的标签。

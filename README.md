@@ -6,6 +6,12 @@ Bookmark assistant replies in [DeepSeek Harness](https://github.com/deepseek-ai/
 
 [中文说明](./README.zh.md)
 
+## Screenshots
+
+![Bookmark action on an assistant reply](docs/screenshot-actions.png)
+
+![The standalone bookmark center](docs/screenshot-center.png)
+
 ## Features
 
 - **Per-message bookmark** — an archive button on each finalized assistant reply (right next to the 👍/👎 feedback buttons), with an inline editor for a note and comma-separated tags.
