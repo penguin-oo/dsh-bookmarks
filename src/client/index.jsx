@@ -26,13 +26,14 @@ const cssText = `
 .dshbm_action{width:28px;height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:28px;justify-content:center;align-items:center;padding:6px;display:inline-flex}
 .dshbm_action:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .dshbm_action:disabled{cursor:default;opacity:.4}
-.dshbm_action[data-active]{color:var(--dsw-alias-brand-primary)}
+.dshbm_action[data-active]{color:#4d6bfe}
 .dshbm_editor{align-items:flex-start;gap:6px;display:inline-flex;flex-wrap:wrap}
 .dshbm_field{border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);width:240px;color:var(--dsw-alias-label-primary);font:inherit;resize:vertical;border-radius:8px;padding:6px 8px;font-size:13px}
-.dshbm_field:focus{outline:1px solid var(--dsw-alias-brand-primary)}
+.dshbm_field:focus{outline:1px solid #4d6bfe}
 .dshbm_btn{cursor:pointer;border:none;border-radius:14px;height:28px;padding:0 10px;font-size:13px}
 .dshbm_btn:disabled{cursor:default;opacity:.4}
-.dshbm_save{background:var(--dsw-alias-brand-primary);color:#fff}
+.dshbm_save{background:#4d6bfe;color:#fff}
+.dshbm_save:hover{background:#3a56e4}
 .dshbm_cancel{color:var(--dsw-alias-label-secondary);background:0 0}
 .dshbm_cancel:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .dshbm_danger{color:var(--dsw-alias-label-secondary);background:0 0}
@@ -40,40 +41,44 @@ const cssText = `
 .dshbm_failure{color:var(--dsw-alias-label-secondary);padding-left:4px;font-size:13px;line-height:28px}
 .dshbm_footerAction{position:relative;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:8px;padding:6px;display:inline-flex;align-items:center}
 .dshbm_footerAction:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
-.dshbm_badge{position:absolute;top:1px;right:1px;background:var(--dsw-alias-brand-primary);color:#fff;border-radius:7px;font-size:10px;line-height:13px;min-width:13px;text-align:center;padding:0 2px}
-.dshbm_overlay{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;background:var(--dsw-alias-bg-overlay);pointer-events:auto;color:var(--dsw-alias-label-primary)}
-.dshbm_head{display:flex;align-items:center;gap:10px;padding:14px 28px;border-bottom:1px solid var(--dsw-alias-border-l2)}
-.dshbm_title{flex:1;font-size:16px;font-weight:600;color:var(--dsw-alias-label-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dshbm_count{font-size:12px;color:var(--dsw-alias-label-secondary)}
+.dshbm_badge{position:absolute;top:1px;right:1px;background:#4d6bfe;color:#fff;border-radius:7px;font-size:10px;line-height:13px;min-width:13px;text-align:center;padding:0 2px}
+.dshbm_overlay{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;background:var(--dsw-alias-bg-base);pointer-events:auto;color:var(--dsw-alias-label-primary)}
+.dshbm_head{display:flex;align-items:center;gap:10px;padding:16px 32px;background:var(--dsw-alias-bg-layer-1);border-bottom:1px solid var(--dsw-alias-border-l2)}
+.dshbm_headIcon{color:#4d6bfe;display:inline-flex}
+.dshbm_title{flex:1;font-size:17px;font-weight:600;color:var(--dsw-alias-label-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dshbm_count{font-size:12px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-2);border-radius:10px;padding:2px 10px;line-height:18px}
 .dshbm_close{color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:8px;padding:6px;display:inline-flex}
 .dshbm_close:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
-.dshbm_body{flex:1;overflow-y:auto;padding:20px 28px 40px;display:flex;justify-content:center;align-items:flex-start}
+.dshbm_body{flex:1;overflow-y:auto;padding:24px 32px 48px;display:flex;justify-content:center;align-items:flex-start}
 .dshbm_inner{width:100%;max-width:860px;display:flex;flex-direction:column;gap:14px}
 .dshbm_toolbar{display:flex;flex-direction:column;gap:10px}
-.dshbm_search{position:relative;display:flex;align-items:center}
-.dshbm_searchIcon{position:absolute;left:8px;color:var(--dsw-alias-label-secondary);pointer-events:none}
-.dshbm_searchInput{border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);width:100%;color:var(--dsw-alias-label-primary);font:inherit;border-radius:8px;padding:6px 8px 6px 28px;font-size:13px}
-.dshbm_searchInput:focus{outline:1px solid var(--dsw-alias-brand-primary)}
+.dshbm_toolbarRow{display:flex;gap:10px;align-items:center}
+.dshbm_search{position:relative;display:flex;align-items:center;flex:1}
+.dshbm_searchIcon{position:absolute;left:10px;color:var(--dsw-alias-label-secondary);pointer-events:none}
+.dshbm_searchInput{border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);width:100%;color:var(--dsw-alias-label-primary);font:inherit;border-radius:8px;padding:7px 10px 7px 32px;font-size:13px}
+.dshbm_searchInput:focus{outline:1px solid #4d6bfe}
 .dshbm_tags{display:flex;gap:6px;flex-wrap:wrap}
-.dshbm_tag{cursor:pointer;border:1px solid var(--dsw-alias-border-l1);background:0 0;color:var(--dsw-alias-label-secondary);border-radius:12px;font-size:12px;line-height:18px;padding:0 8px}
-.dshbm_tag:hover{background:var(--dsw-alias-bg-layer-1)}
-.dshbm_tag[data-on]{background:var(--dsw-alias-brand-primary);color:#fff;border-color:transparent}
+.dshbm_tag{cursor:pointer;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-secondary);border-radius:12px;font-size:12px;line-height:18px;padding:2px 10px}
+.dshbm_tag:hover{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-label-primary)}
+.dshbm_tag[data-on]{background:#4d6bfe;color:#fff;border-color:transparent}
 .dshbm_list{display:flex;flex-direction:column;gap:10px}
-.dshbm_empty{padding:40px 12px;text-align:center;color:var(--dsw-alias-label-secondary);font-size:13px}
-.dshbm_card{border:1px solid var(--dsw-alias-border-l1);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--dsw-alias-bg-layer-1)}
-.dshbm_snippet{font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
-.dshbm_note{font-size:12px;line-height:1.5;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-2);border-radius:6px;padding:4px 8px;word-break:break-word}
+.dshbm_empty{padding:64px 12px;text-align:center;color:var(--dsw-alias-label-secondary);font-size:13px;line-height:1.8;display:flex;flex-direction:column;align-items:center;gap:12px}
+.dshbm_emptyIcon{color:var(--dsw-alias-label-secondary);opacity:.7}
+.dshbm_card{border:1px solid var(--dsw-alias-border-l1);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;background:var(--dsw-alias-bg-layer-1);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.dshbm_card:hover{border-color:#4d6bfe}
+.dshbm_snippet{font-size:13px;line-height:1.7;color:var(--dsw-alias-label-primary);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.dshbm_note{font-size:12px;line-height:1.6;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-2);border-left:3px solid #4d6bfe;border-radius:0 6px 6px 0;padding:6px 10px;word-break:break-word}
 .dshbm_meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .dshbm_time{font-size:11px;color:var(--dsw-alias-label-secondary)}
 .dshbm_rowTags{display:flex;gap:4px;flex-wrap:wrap}
-.dshbm_rowTag{font-size:11px;color:var(--dsw-alias-label-secondary);border:1px solid var(--dsw-alias-border-l1);border-radius:8px;padding:0 6px;line-height:16px}
+.dshbm_rowTag{font-size:11px;color:var(--dsw-alias-label-secondary);border:1px solid var(--dsw-alias-border-l1);border-radius:8px;padding:0 6px;line-height:16px;background:var(--dsw-alias-bg-layer-2)}
 .dshbm_spacer{flex:1}
 .dshbm_iconBtn{color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px;display:inline-flex}
 .dshbm_iconBtn:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .dshbm_iconBtn:disabled{cursor:default;opacity:.4}
-.dshbm_foot{display:flex;justify-content:flex-end;border-top:1px solid var(--dsw-alias-border-l2);padding-top:12px}
-.dshbm_export{cursor:pointer;border:none;border-radius:14px;height:28px;padding:0 12px;font-size:13px;background:var(--dsw-alias-brand-primary);color:#fff;display:inline-flex;align-items:center;gap:6px}
-.dshbm_export:disabled{cursor:default;opacity:.4}
+.dshbm_export{cursor:pointer;border:none;border-radius:8px;height:32px;padding:0 14px;font-size:13px;font-weight:500;background:#4d6bfe;color:#fff;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.dshbm_export:hover{background:#3a56e4}
+.dshbm_export:disabled{cursor:default;opacity:.5}
 `;
 
 const css = {
@@ -89,12 +94,14 @@ const css = {
   badge: "dshbm_badge",
   overlay: "dshbm_overlay",
   head: "dshbm_head",
+  headIcon: "dshbm_headIcon",
   title: "dshbm_title",
   count: "dshbm_count",
   close: "dshbm_close",
   body: "dshbm_body",
   inner: "dshbm_inner",
   toolbar: "dshbm_toolbar",
+  toolbarRow: "dshbm_toolbarRow",
   search: "dshbm_search",
   searchIcon: "dshbm_searchIcon",
   searchInput: "dshbm_searchInput",
@@ -102,6 +109,7 @@ const css = {
   tag: "dshbm_tag",
   list: "dshbm_list",
   empty: "dshbm_empty",
+  emptyIcon: "dshbm_emptyIcon",
   card: "dshbm_card",
   snippet: "dshbm_snippet",
   note: "dshbm_note",
@@ -111,7 +119,6 @@ const css = {
   rowTag: "dshbm_rowTag",
   spacer: "dshbm_spacer",
   iconBtn: "dshbm_iconBtn",
-  foot: "dshbm_foot",
   export: "dshbm_export",
 };
 
@@ -722,7 +729,9 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
   return (
     <div className={css.overlay} role="dialog" aria-label={t("center.title")}>
       <div className={css.head}>
-        <IconArchiveOutline20 size={16} />
+        <span className={css.headIcon}>
+          <IconArchiveOutline20 size={18} />
+        </span>
         <span className={css.title}>{t("center.title")}</span>
         <span className={css.count}>{String(items.length)}</span>
         <button type="button" className={css.close} aria-label={t("note.cancel")} onClick={onClose}>
@@ -732,18 +741,24 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
       <div className={css.body}>
         <div className={css.inner}>
           <div className={css.toolbar}>
-            <label className={css.search}>
-              <span className={css.searchIcon}>
-                <IconSearchOutline16 />
-              </span>
-              <input
-                className={css.searchInput}
-                type="text"
-                value={query}
-                placeholder={t("center.search")}
-                onChange={(event) => setQuery(event.target.value)}
-              />
-            </label>
+            <div className={css.toolbarRow}>
+              <label className={css.search}>
+                <span className={css.searchIcon}>
+                  <IconSearchOutline16 />
+                </span>
+                <input
+                  className={css.searchInput}
+                  type="text"
+                  value={query}
+                  placeholder={t("center.search")}
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+              </label>
+              <button type="button" className={css.export} disabled={items.length === 0} onClick={exportMarkdown}>
+                <IconDownloadOutline16 />
+                {t("center.export")}
+              </button>
+            </div>
             {allTags.length > 0 && (
               <div className={css.tags}>
                 <button type="button" className={css.tag} data-on={tagFilter === null || undefined} onClick={() => setTagFilter(null)}>
@@ -765,7 +780,14 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
           </div>
           <div className={css.list}>
             {view.status === "loading" && items.length === 0 && <div className={css.empty}>…</div>}
-            {view.status !== "loading" && items.length === 0 && <div className={css.empty}>{t("center.empty")}</div>}
+            {view.status !== "loading" && items.length === 0 && (
+              <div className={css.empty}>
+                <span className={css.emptyIcon}>
+                  <IconArchiveOutline20 size={32} />
+                </span>
+                <span>{t("center.empty")}</span>
+              </div>
+            )}
             {items.length > 0 && filtered.length === 0 && <div className={css.empty}>{t("center.noResults")}</div>}
             {filtered.map((item) => {
               const key = keyOf(item.sessionId, item.messageId);
@@ -840,12 +862,6 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
               {failure}
             </div>
           )}
-          <div className={css.foot}>
-            <button type="button" className={css.export} disabled={items.length === 0} onClick={exportMarkdown}>
-              <IconDownloadOutline16 />
-              {t("center.export")}
-            </button>
-          </div>
         </div>
       </div>
     </div>
