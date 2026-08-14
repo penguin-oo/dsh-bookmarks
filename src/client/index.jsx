@@ -3,10 +3,9 @@
 //
 // - A bookmark action in the `conversation.chat.assistant-actions` strip with
 //   an inline note/tags editor.
-// - A cross-session bookmark center toggled from the sidebar footer
-//   (`sidebar.footer.action`) and by Alt+B, with search, tag filter,
-//   session jump, inline editing and one-click Markdown export.
-import { createPortal } from "react-dom";
+// - A standalone full-screen bookmark center mounted on the app shell's
+//   `shell.overlay` slot (toggle: sidebar footer button or Alt+B), with
+//   search, tag filter, session jump, inline editing and Markdown export.
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   IconArchiveOutline20,
@@ -24,54 +23,56 @@ import { TYPERT_REMOTE } from "../../lib/typert.remote-client.js";
 // ── styles ───────────────────────────────────────────────────────────────────
 
 const cssText = `
-.dshbm_action{width:28px;height:28px;color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:28px;justify-content:center;align-items:center;padding:6px;display:inline-flex}
-.dshbm_action:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}
+.dshbm_action{width:28px;height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:28px;justify-content:center;align-items:center;padding:6px;display:inline-flex}
+.dshbm_action:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .dshbm_action:disabled{cursor:default;opacity:.4}
-.dshbm_action[data-active]{color:var(--dsw-alias-label-primary)}
+.dshbm_action[data-active]{color:var(--dsw-alias-brand-primary)}
 .dshbm_editor{align-items:flex-start;gap:6px;display:inline-flex;flex-wrap:wrap}
-.dshbm_field{border:1px solid var(--dsw-alias-border-secondary);background:var(--dsw-alias-bg-primary);width:240px;color:var(--dsw-alias-label-primary);font:inherit;resize:vertical;border-radius:8px;padding:6px 8px;font-size:13px}
-.dshbm_field:focus{outline:1px solid var(--dsw-alias-interactive-bg-primary)}
+.dshbm_field{border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);width:240px;color:var(--dsw-alias-label-primary);font:inherit;resize:vertical;border-radius:8px;padding:6px 8px;font-size:13px}
+.dshbm_field:focus{outline:1px solid var(--dsw-alias-brand-primary)}
 .dshbm_btn{cursor:pointer;border:none;border-radius:14px;height:28px;padding:0 10px;font-size:13px}
 .dshbm_btn:disabled{cursor:default;opacity:.4}
-.dshbm_save{background:var(--dsw-alias-interactive-bg-primary);color:var(--dsw-alias-label-inverse)}
-.dshbm_cancel{color:var(--dsw-alias-label-tertiary);background:0 0}
-.dshbm_cancel:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}
-.dshbm_danger{color:var(--dsw-alias-label-tertiary);background:0 0}
-.dshbm_danger:hover{background:var(--dsw-alias-interactive-bg-hover);color:#e5484d}
-.dshbm_failure{color:var(--dsw-alias-label-tertiary);padding-left:4px;font-size:13px;line-height:28px}
-.dshbm_footerAction{position:relative;color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:8px;padding:6px;display:inline-flex;align-items:center}
-.dshbm_footerAction:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}
-.dshbm_badge{position:absolute;top:1px;right:1px;background:var(--dsw-alias-interactive-bg-primary);color:var(--dsw-alias-label-inverse);border-radius:7px;font-size:10px;line-height:13px;min-width:13px;text-align:center;padding:0 2px}
-.dshbm_panel{position:fixed;right:20px;bottom:20px;z-index:2147483000;width:380px;max-width:calc(100vw - 40px);max-height:70vh;display:flex;flex-direction:column;background:var(--dsw-alias-bg-primary);border:1px solid var(--dsw-alias-border-secondary);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.24);overflow:hidden}
-.dshbm_head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--dsw-alias-border-secondary)}
-.dshbm_title{flex:1;font-size:14px;font-weight:600;color:var(--dsw-alias-label-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dshbm_count{font-size:12px;color:var(--dsw-alias-label-tertiary)}
-.dshbm_close{color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:8px;padding:4px;display:inline-flex}
-.dshbm_close:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}
-.dshbm_toolbar{display:flex;flex-direction:column;gap:8px;padding:8px 12px;border-bottom:1px solid var(--dsw-alias-border-secondary)}
+.dshbm_save{background:var(--dsw-alias-brand-primary);color:#fff}
+.dshbm_cancel{color:var(--dsw-alias-label-secondary);background:0 0}
+.dshbm_cancel:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
+.dshbm_danger{color:var(--dsw-alias-label-secondary);background:0 0}
+.dshbm_danger:hover{background:var(--dsw-alias-bg-layer-1);color:#e5484d}
+.dshbm_failure{color:var(--dsw-alias-label-secondary);padding-left:4px;font-size:13px;line-height:28px}
+.dshbm_footerAction{position:relative;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:8px;padding:6px;display:inline-flex;align-items:center}
+.dshbm_footerAction:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
+.dshbm_badge{position:absolute;top:1px;right:1px;background:var(--dsw-alias-brand-primary);color:#fff;border-radius:7px;font-size:10px;line-height:13px;min-width:13px;text-align:center;padding:0 2px}
+.dshbm_overlay{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;background:var(--dsw-alias-bg-overlay);pointer-events:auto;color:var(--dsw-alias-label-primary)}
+.dshbm_head{display:flex;align-items:center;gap:10px;padding:14px 28px;border-bottom:1px solid var(--dsw-alias-border-l2)}
+.dshbm_title{flex:1;font-size:16px;font-weight:600;color:var(--dsw-alias-label-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dshbm_count{font-size:12px;color:var(--dsw-alias-label-secondary)}
+.dshbm_close{color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:8px;padding:6px;display:inline-flex}
+.dshbm_close:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
+.dshbm_body{flex:1;overflow-y:auto;padding:20px 28px 40px;display:flex;justify-content:center;align-items:flex-start}
+.dshbm_inner{width:100%;max-width:860px;display:flex;flex-direction:column;gap:14px}
+.dshbm_toolbar{display:flex;flex-direction:column;gap:10px}
 .dshbm_search{position:relative;display:flex;align-items:center}
-.dshbm_searchIcon{position:absolute;left:8px;color:var(--dsw-alias-label-tertiary);pointer-events:none}
-.dshbm_searchInput{border:1px solid var(--dsw-alias-border-secondary);background:var(--dsw-alias-bg-primary);width:100%;color:var(--dsw-alias-label-primary);font:inherit;border-radius:8px;padding:6px 8px 6px 28px;font-size:13px}
-.dshbm_searchInput:focus{outline:1px solid var(--dsw-alias-interactive-bg-primary)}
+.dshbm_searchIcon{position:absolute;left:8px;color:var(--dsw-alias-label-secondary);pointer-events:none}
+.dshbm_searchInput{border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);width:100%;color:var(--dsw-alias-label-primary);font:inherit;border-radius:8px;padding:6px 8px 6px 28px;font-size:13px}
+.dshbm_searchInput:focus{outline:1px solid var(--dsw-alias-brand-primary)}
 .dshbm_tags{display:flex;gap:6px;flex-wrap:wrap}
-.dshbm_tag{cursor:pointer;border:1px solid var(--dsw-alias-border-secondary);background:0 0;color:var(--dsw-alias-label-secondary);border-radius:12px;font-size:12px;line-height:18px;padding:0 8px}
-.dshbm_tag:hover{background:var(--dsw-alias-interactive-bg-hover)}
-.dshbm_tag[data-on]{background:var(--dsw-alias-interactive-bg-primary);color:var(--dsw-alias-label-inverse);border-color:transparent}
-.dshbm_list{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:8px}
-.dshbm_empty{padding:24px 12px;text-align:center;color:var(--dsw-alias-label-tertiary);font-size:13px}
-.dshbm_card{border:1px solid var(--dsw-alias-border-secondary);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
-.dshbm_snippet{font-size:13px;line-height:1.5;color:var(--dsw-alias-label-primary);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
-.dshbm_note{font-size:12px;line-height:1.5;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-secondary,#f5f6f7);border-radius:6px;padding:4px 8px;word-break:break-word}
+.dshbm_tag{cursor:pointer;border:1px solid var(--dsw-alias-border-l1);background:0 0;color:var(--dsw-alias-label-secondary);border-radius:12px;font-size:12px;line-height:18px;padding:0 8px}
+.dshbm_tag:hover{background:var(--dsw-alias-bg-layer-1)}
+.dshbm_tag[data-on]{background:var(--dsw-alias-brand-primary);color:#fff;border-color:transparent}
+.dshbm_list{display:flex;flex-direction:column;gap:10px}
+.dshbm_empty{padding:40px 12px;text-align:center;color:var(--dsw-alias-label-secondary);font-size:13px}
+.dshbm_card{border:1px solid var(--dsw-alias-border-l1);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--dsw-alias-bg-layer-1)}
+.dshbm_snippet{font-size:13px;line-height:1.6;color:var(--dsw-alias-label-primary);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.dshbm_note{font-size:12px;line-height:1.5;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-2);border-radius:6px;padding:4px 8px;word-break:break-word}
 .dshbm_meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.dshbm_time{font-size:11px;color:var(--dsw-alias-label-tertiary)}
+.dshbm_time{font-size:11px;color:var(--dsw-alias-label-secondary)}
 .dshbm_rowTags{display:flex;gap:4px;flex-wrap:wrap}
-.dshbm_rowTag{font-size:11px;color:var(--dsw-alias-label-tertiary);border:1px solid var(--dsw-alias-border-secondary);border-radius:8px;padding:0 6px;line-height:16px}
+.dshbm_rowTag{font-size:11px;color:var(--dsw-alias-label-secondary);border:1px solid var(--dsw-alias-border-l1);border-radius:8px;padding:0 6px;line-height:16px}
 .dshbm_spacer{flex:1}
-.dshbm_iconBtn{color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px;display:inline-flex}
-.dshbm_iconBtn:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}
+.dshbm_iconBtn{color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:6px;padding:4px;display:inline-flex}
+.dshbm_iconBtn:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .dshbm_iconBtn:disabled{cursor:default;opacity:.4}
-.dshbm_foot{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--dsw-alias-border-secondary)}
-.dshbm_export{cursor:pointer;border:none;border-radius:14px;height:28px;padding:0 12px;font-size:13px;background:var(--dsw-alias-interactive-bg-primary);color:var(--dsw-alias-label-inverse);display:inline-flex;align-items:center;gap:6px}
+.dshbm_foot{display:flex;justify-content:flex-end;border-top:1px solid var(--dsw-alias-border-l2);padding-top:12px}
+.dshbm_export{cursor:pointer;border:none;border-radius:14px;height:28px;padding:0 12px;font-size:13px;background:var(--dsw-alias-brand-primary);color:#fff;display:inline-flex;align-items:center;gap:6px}
 .dshbm_export:disabled{cursor:default;opacity:.4}
 `;
 
@@ -86,11 +87,13 @@ const css = {
   failure: "dshbm_failure",
   footerAction: "dshbm_footerAction",
   badge: "dshbm_badge",
-  panel: "dshbm_panel",
+  overlay: "dshbm_overlay",
   head: "dshbm_head",
   title: "dshbm_title",
   count: "dshbm_count",
   close: "dshbm_close",
+  body: "dshbm_body",
+  inner: "dshbm_inner",
   toolbar: "dshbm_toolbar",
   search: "dshbm_search",
   searchIcon: "dshbm_searchIcon",
@@ -226,7 +229,7 @@ function carrierFailure(error) {
   return { ok: false, error: { code: error.code, message: error.message } };
 }
 
-/** Panel open/close cell shared by the sidebar toggle and the Alt+B shortcut. */
+/** Open/close cell shared by the sidebar toggle, the overlay, and Alt+B. */
 const centerOpen = (() => {
   let open = false;
   const listeners = new Set();
@@ -580,8 +583,7 @@ function BookmarkAction({ messageId, sessionId, ensure, bookmark, update, remove
 }
 
 /** Sidebar footer toggle for the bookmark center. */
-function BookmarkCenterToggle({ ensure, remove, update, jumpTo, useBookmarks, t }) {
-  const open = useSyncExternalStore(centerOpen.subscribe, centerOpen.get);
+function BookmarkCenterToggle({ ensure, useBookmarks, t }) {
   const view = useBookmarks((value) => value);
   const seeded = useRef(false);
   const seed = useCallback(() => {
@@ -591,31 +593,48 @@ function BookmarkCenterToggle({ ensure, remove, update, jumpTo, useBookmarks, t 
   }, [ensure]);
   const count = view.items.size;
   return (
-    <>
-      <button
-        type="button"
-        className={css.footerAction}
-        aria-label={t("center.title")}
-        title={t("center.title")}
-        onClick={() => {
-          seed();
-          centerOpen.toggle();
-        }}
-      >
-        <IconArchiveOutline20 size={16} />
-        {count > 0 && <span className={css.badge}>{count > 99 ? "99+" : String(count)}</span>}
-      </button>
-      {open &&
-        createPortal(
-          <BookmarkCenterPanel t={t} view={view} remove={remove} update={update} jumpTo={jumpTo} onClose={() => centerOpen.set(false)} />,
-          document.body,
-        )}
-    </>
+    <button
+      type="button"
+      className={css.footerAction}
+      aria-label={t("center.title")}
+      title={t("center.title")}
+      onClick={() => {
+        seed();
+        centerOpen.toggle();
+      }}
+    >
+      <IconArchiveOutline20 size={16} />
+      {count > 0 && <span className={css.badge}>{count > 99 ? "99+" : String(count)}</span>}
+    </button>
   );
 }
 
-/** The cross-session bookmark center panel. */
-function BookmarkCenterPanel({ t, view, remove, update, jumpTo, onClose }) {
+/** shell.overlay entry: renders the standalone center only while it is open. */
+function BookmarkCenterEntry({ ensure, remove, update, jumpTo, useBookmarks, t }) {
+  const open = useSyncExternalStore(centerOpen.subscribe, centerOpen.get);
+  const view = useBookmarks((value) => value);
+  const seeded = useRef(false);
+  useEffect(() => {
+    if (open && !seeded.current) {
+      seeded.current = true;
+      ensure();
+    }
+  }, [open, ensure]);
+  if (!open) return null;
+  return (
+    <BookmarkCenterOverlay
+      t={t}
+      view={view}
+      remove={remove}
+      update={update}
+      jumpTo={jumpTo}
+      onClose={() => centerOpen.set(false)}
+    />
+  );
+}
+
+/** The standalone, opaque bookmark center. */
+function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
   const [query, setQuery] = useState("");
   const [tagFilter, setTagFilter] = useState(null);
   const [editingKey, setEditingKey] = useState(null);
@@ -701,7 +720,7 @@ function BookmarkCenterPanel({ t, view, remove, update, jumpTo, onClose }) {
   };
 
   return (
-    <div className={css.panel} role="dialog" aria-label={t("center.title")}>
+    <div className={css.overlay} role="dialog" aria-label={t("center.title")}>
       <div className={css.head}>
         <IconArchiveOutline20 size={16} />
         <span className={css.title}>{t("center.title")}</span>
@@ -710,120 +729,124 @@ function BookmarkCenterPanel({ t, view, remove, update, jumpTo, onClose }) {
           <IconCloseOutline16 />
         </button>
       </div>
-      <div className={css.toolbar}>
-        <label className={css.search}>
-          <span className={css.searchIcon}>
-            <IconSearchOutline16 />
-          </span>
-          <input
-            className={css.searchInput}
-            type="text"
-            value={query}
-            placeholder={t("center.search")}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </label>
-        {allTags.length > 0 && (
-          <div className={css.tags}>
-            <button type="button" className={css.tag} data-on={tagFilter === null || undefined} onClick={() => setTagFilter(null)}>
-              {t("center.all")}
-            </button>
-            {allTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                className={css.tag}
-                data-on={tagFilter === tag || undefined}
-                onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <div className={css.list}>
-        {view.status === "loading" && items.length === 0 && <div className={css.empty}>…</div>}
-        {view.status !== "loading" && items.length === 0 && <div className={css.empty}>{t("center.empty")}</div>}
-        {items.length > 0 && filtered.length === 0 && <div className={css.empty}>{t("center.noResults")}</div>}
-        {filtered.map((item) => {
-          const key = keyOf(item.sessionId, item.messageId);
-          const isEditing = editingKey === key;
-          const isPending = pendingKey === key;
-          return (
-            <div className={css.card} key={key}>
-              {isEditing ? (
-                <>
-                  <textarea
-                    className={css.field}
-                    aria-label={t("note.aria")}
-                    value={draftNote}
-                    rows={2}
-                    onChange={(event) => setDraftNote(event.target.value)}
-                  />
-                  <input
-                    className={css.field}
-                    aria-label={t("tags.aria")}
-                    value={draftTags}
-                    placeholder={t("tags.placeholder")}
-                    onChange={(event) => setDraftTags(event.target.value)}
-                  />
-                </>
-              ) : (
-                <>
-                  {item.snippet && <div className={css.snippet}>{item.snippet}</div>}
-                  {item.note && <div className={css.note}>{item.note}</div>}
-                </>
-              )}
-              <div className={css.meta}>
-                {item.tags.length > 0 && (
-                  <span className={css.rowTags}>
-                    {item.tags.map((tag) => (
-                      <span className={css.rowTag} key={tag}>
-                        {tag}
-                      </span>
-                    ))}
-                  </span>
-                )}
-                <span className={css.time}>{new Date(item.createdAt).toLocaleString()}</span>
-                <span className={css.spacer} />
-                {isEditing ? (
-                  <>
-                    <button type="button" className={css.iconBtn} disabled={isPending} onClick={() => saveEdit(item)} aria-label={t("note.save")}>
-                      <IconCheckOutline16 />
-                    </button>
-                    <button type="button" className={css.iconBtn} onClick={() => setEditingKey(null)} aria-label={t("note.cancel")}>
-                      <IconCloseOutline16 />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button type="button" className={css.iconBtn} onClick={() => jumpTo(item.sessionId)} aria-label={t("action.jump")} title={t("action.jump")}>
-                      <IconRightUpOutline16 />
-                    </button>
-                    <button type="button" className={css.iconBtn} onClick={() => startEdit(item)} aria-label={t("center.editNote")} title={t("center.editNote")}>
-                      <IconEditOutline16 />
-                    </button>
-                    <button type="button" className={css.iconBtn} disabled={isPending} onClick={() => deleteItem(item)} aria-label={t("action.delete")} title={t("action.delete")}>
-                      <IconTrashOutline16 />
-                    </button>
-                  </>
-                )}
+      <div className={css.body}>
+        <div className={css.inner}>
+          <div className={css.toolbar}>
+            <label className={css.search}>
+              <span className={css.searchIcon}>
+                <IconSearchOutline16 />
+              </span>
+              <input
+                className={css.searchInput}
+                type="text"
+                value={query}
+                placeholder={t("center.search")}
+                onChange={(event) => setQuery(event.target.value)}
+              />
+            </label>
+            {allTags.length > 0 && (
+              <div className={css.tags}>
+                <button type="button" className={css.tag} data-on={tagFilter === null || undefined} onClick={() => setTagFilter(null)}>
+                  {t("center.all")}
+                </button>
+                {allTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    className={css.tag}
+                    data-on={tagFilter === tag || undefined}
+                    onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
+                  >
+                    {tag}
+                  </button>
+                ))}
               </div>
+            )}
+          </div>
+          <div className={css.list}>
+            {view.status === "loading" && items.length === 0 && <div className={css.empty}>…</div>}
+            {view.status !== "loading" && items.length === 0 && <div className={css.empty}>{t("center.empty")}</div>}
+            {items.length > 0 && filtered.length === 0 && <div className={css.empty}>{t("center.noResults")}</div>}
+            {filtered.map((item) => {
+              const key = keyOf(item.sessionId, item.messageId);
+              const isEditing = editingKey === key;
+              const isPending = pendingKey === key;
+              return (
+                <div className={css.card} key={key}>
+                  {isEditing ? (
+                    <>
+                      <textarea
+                        className={css.field}
+                        aria-label={t("note.aria")}
+                        value={draftNote}
+                        rows={2}
+                        onChange={(event) => setDraftNote(event.target.value)}
+                      />
+                      <input
+                        className={css.field}
+                        aria-label={t("tags.aria")}
+                        value={draftTags}
+                        placeholder={t("tags.placeholder")}
+                        onChange={(event) => setDraftTags(event.target.value)}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      {item.snippet && <div className={css.snippet}>{item.snippet}</div>}
+                      {item.note && <div className={css.note}>{item.note}</div>}
+                    </>
+                  )}
+                  <div className={css.meta}>
+                    {item.tags.length > 0 && (
+                      <span className={css.rowTags}>
+                        {item.tags.map((tag) => (
+                          <span className={css.rowTag} key={tag}>
+                            {tag}
+                          </span>
+                        ))}
+                      </span>
+                    )}
+                    <span className={css.time}>{new Date(item.createdAt).toLocaleString()}</span>
+                    <span className={css.spacer} />
+                    {isEditing ? (
+                      <>
+                        <button type="button" className={css.iconBtn} disabled={isPending} onClick={() => saveEdit(item)} aria-label={t("note.save")}>
+                          <IconCheckOutline16 />
+                        </button>
+                        <button type="button" className={css.iconBtn} onClick={() => setEditingKey(null)} aria-label={t("note.cancel")}>
+                          <IconCloseOutline16 />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button type="button" className={css.iconBtn} onClick={() => jumpTo(item.sessionId)} aria-label={t("action.jump")} title={t("action.jump")}>
+                          <IconRightUpOutline16 />
+                        </button>
+                        <button type="button" className={css.iconBtn} onClick={() => startEdit(item)} aria-label={t("center.editNote")} title={t("center.editNote")}>
+                          <IconEditOutline16 />
+                        </button>
+                        <button type="button" className={css.iconBtn} disabled={isPending} onClick={() => deleteItem(item)} aria-label={t("action.delete")} title={t("action.delete")}>
+                          <IconTrashOutline16 />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {failure !== null && (
+            <div className={css.failure} role="status">
+              {failure}
             </div>
-          );
-        })}
-      </div>
-      {failure !== null && (
-        <div className={css.failure} role="status">
-          {failure}
+          )}
+          <div className={css.foot}>
+            <button type="button" className={css.export} disabled={items.length === 0} onClick={exportMarkdown}>
+              <IconDownloadOutline16 />
+              {t("center.export")}
+            </button>
+          </div>
         </div>
-      )}
-      <div className={css.foot}>
-        <button type="button" className={css.export} disabled={items.length === 0} onClick={exportMarkdown}>
-          <IconDownloadOutline16 />
-          {t("center.export")}
-        </button>
       </div>
     </div>
   );
@@ -838,7 +861,8 @@ const inject = ["slots", "remote", "locale", "sessions"];
 
 /**
  * Client plugin body: mount the `bookmarks` Remote contribution, then
- * contribute the per-message action and the sidebar center toggle.
+ * contribute the per-message action, the sidebar center toggle, and the
+ * standalone center overlay.
  * @param ctx - client root context.
  */
 async function apply(ctx) {
@@ -899,12 +923,31 @@ async function apply(ctx) {
         inject: () => ({
           hooks: { bookmarks: store },
           ensure: () => store.ensure(),
+        }),
+      },
+      BookmarkCenterToggle,
+    );
+    return () => {
+      dispose();
+    };
+  });
+
+  ctx.slots.inject("shell.overlay", () => {
+    const dispose = ctx.slots.register(
+      {
+        name: "shell.overlay",
+        id: "bookmarks",
+        order: 10,
+        locale: NS,
+        inject: () => ({
+          hooks: { bookmarks: store },
+          ensure: () => store.ensure(),
           update: (sessionId, messageId, note, tags) => store.update(sessionId, messageId, note, tags),
           remove: (sessionId, messageId) => store.remove(sessionId, messageId),
           jumpTo: (sessionId) => ctx.sessions.open(sessionId),
         }),
       },
-      BookmarkCenterToggle,
+      BookmarkCenterEntry,
     );
     return () => {
       dispose();

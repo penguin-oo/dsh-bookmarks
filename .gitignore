@@ -1,2 +1,5 @@
 node_modules/
 *.log
+
+# local-only: pushing requires a GitHub token with the workflow scope
+.github/
