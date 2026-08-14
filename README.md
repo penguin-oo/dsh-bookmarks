@@ -82,3 +82,8 @@ npm run build          # bundles src/client into lib/client.js
 ## License
 
 [MIT](./LICENSE)
+
+## Acknowledgements
+
+This project is promoted on the [LINUX DO](https://linux.do) community.
+

@@ -82,3 +82,8 @@ npm run build          # 将 src/client 打包为 lib/client.js
 ## License
 
 [MIT](./LICENSE)
+
+## 致谢
+
+本项目在 [LINUX DO](https://linux.do) 社区推广。
+
