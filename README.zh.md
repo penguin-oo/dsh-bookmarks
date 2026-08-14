@@ -4,6 +4,16 @@
 
 [English](./README.md)
 
+## 截图
+
+收藏按钮就在每条已定稿回复的 👍/👎 反馈按钮旁：
+
+![收藏按钮](https://raw.githubusercontent.com/penguin-oo/dsh-bookmarks/main/docs/screenshot-actions.png)
+
+跨会话收藏中心（侧栏底部入口，或 `Alt+B` 开关）：
+
+![收藏中心](https://raw.githubusercontent.com/penguin-oo/dsh-bookmarks/main/docs/screenshot-center.png)
+
 ## 功能
 
 - **逐条收藏** — 每条已定稿的 AI 回复旁边有一个归档按钮（就在 👍/👎 反馈按钮旁），点击收藏，并可内联编辑备注与逗号分隔的标签。

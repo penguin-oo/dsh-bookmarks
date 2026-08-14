@@ -4,6 +4,16 @@ Bookmark assistant replies in [DeepSeek Harness](https://github.com/deepseek-ai/
 
 [中文说明](./README.zh.md)
 
+## Screenshots
+
+The bookmark action sits beside the 👍/👎 feedback buttons on every finalized assistant reply:
+
+![bookmark action strip](https://raw.githubusercontent.com/penguin-oo/dsh-bookmarks/main/docs/screenshot-actions.png)
+
+The cross-session center, opened from the sidebar footer or with `Alt+B`:
+
+![bookmark center](https://raw.githubusercontent.com/penguin-oo/dsh-bookmarks/main/docs/screenshot-center.png)
+
 ## Features
 
 - **Per-message bookmark** — an archive button on each finalized assistant reply (right next to the 👍/👎 feedback buttons), with an inline editor for a note and comma-separated tags.
