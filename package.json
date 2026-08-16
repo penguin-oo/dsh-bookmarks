@@ -1,6 +1,6 @@
 {
   "name": "dsh-bookmarks",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Bookmark assistant replies in DeepSeek Harness: per-message bookmarks with notes and tags, a cross-session bookmark center, and one-click Markdown export.",
   "keywords": [
     "dsh",
