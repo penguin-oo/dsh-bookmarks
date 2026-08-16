@@ -42,7 +42,7 @@ const cssText = `
 .dshbm_failure{color:var(--dsw-alias-label-secondary);padding-left:4px;font-size:13px;line-height:28px}
 .dshbm_footerAction{position:relative;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:8px;padding:6px;display:inline-flex;align-items:center}
 .dshbm_footerAction:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
-.dshbm_badge{position:absolute;top:1px;right:1px;background:#4d6bfe;color:#fff;border-radius:7px;font-size:10px;line-height:13px;min-width:13px;text-align:center;padding:0 2px}
+.dshbm_badge{display:none}
 .dshbm_overlay{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;background:var(--dsw-alias-bg-base);pointer-events:auto;color:var(--dsw-alias-label-primary)}
 .dshbm_head{display:flex;align-items:center;gap:10px;padding:16px 32px;background:var(--dsw-alias-bg-layer-1);border-bottom:1px solid var(--dsw-alias-border-l2)}
 .dshbm_back{display:inline-flex;align-items:center;gap:4px;cursor:pointer;background:0 0;border:none;border-radius:8px;padding:5px 10px 5px 6px;color:var(--dsw-alias-label-secondary);font-size:13px;font-family:inherit}
@@ -617,7 +617,6 @@ function BookmarkCenterToggle({ ensure, useBookmarks, t }) {
       }}
     >
       <IconArchiveOutline20 size={16} />
-      {count > 0 && <span className={css.badge}>{count > 99 ? "99+" : String(count)}</span>}
     </button>
   );
 }
