@@ -40,7 +40,8 @@ const cssText = `
 .dshbm_danger{color:var(--dsw-alias-label-secondary);background:0 0}
 .dshbm_danger:hover{background:var(--dsw-alias-bg-layer-1);color:#e5484d}
 .dshbm_failure{color:var(--dsw-alias-label-secondary);padding-left:4px;font-size:13px;line-height:28px}
-.dshbm_footerAction{position:relative;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:8px;padding:6px;display:inline-flex;align-items:center}
+.dshbm_footerAction{position:relative;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:8px;padding:6px;display:inline-flex;align-items:center;gap:6px}
+.dshbm_footerLabel{font-size:13px}
 .dshbm_footerAction:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .dshbm_badge{display:none}
 .dshbm_overlay{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;background:var(--dsw-alias-bg-base);pointer-events:auto;color:var(--dsw-alias-label-primary)}
@@ -617,6 +618,7 @@ function BookmarkCenterToggle({ ensure, useBookmarks, t }) {
       }}
     >
       <IconArchiveOutline20 size={16} />
+      <span className={css.footerLabel}>{t("center.title")}</span>
     </button>
   );
 }
