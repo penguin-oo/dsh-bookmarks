@@ -1,6 +1,6 @@
 {
   "name": "dsh-bookmarks",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Bookmark assistant replies in DeepSeek Harness: per-message bookmarks with notes and tags, a cross-session bookmark center, and one-click Markdown export.",
   "keywords": [
     "dsh",
@@ -47,7 +47,6 @@
     "client": {
       "platform": "web",
       "inject": [
-        "@deepseek-ai/dsh-client-runtime",
         "@deepseek-ai/dsh-api-remotes",
         "@deepseek-ai/dsh-client-locale",
         "@deepseek-ai/dsh-client-ui-conversation"
@@ -57,16 +56,18 @@
       "dshReleases": {
         "0.1.2-rc.1": "compatible",
         "0.1.3-alpha.1": "compatible",
-        "0.1.3-alpha.2": "compatible"
+        "0.1.3-alpha.2": "compatible",
+        "0.2.0-rc.1": "compatible",
+        "0.2.0-rc.2": "compatible"
       }
     }
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-session": "^0.1.0-rc.6",
-    "@deepseek-ai/dsh-session-persistence": "^0.1.0-rc.6",
-    "@deepseek-ai/dsh-storage-domain": "^0.1.0-rc.6",
-    "@deepseek-ai/dsh-typert-protocol": "^0.1.0-rc.6"
+    "@deepseek-ai/dsh-session": "^0.1.0-rc.6 || ^0.2.0-rc.1",
+    "@deepseek-ai/dsh-session-persistence": "^0.1.0-rc.6 || ^0.2.0-rc.1",
+    "@deepseek-ai/dsh-storage-domain": "^0.1.0-rc.6 || ^0.2.0-rc.1",
+    "@deepseek-ai/dsh-typert-protocol": "^0.1.0-rc.6 || ^0.2.0-rc.1"
   },
   "dependencies": {
     "zod": "^4.4.3"
