@@ -7,16 +7,19 @@
 //   `shell.overlay` slot (toggle: sidebar footer button or Alt+B), with
 //   search, tag filter, session jump, inline editing and Markdown export.
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+// dsh 0.2 renamed the icon set: `IconXxxOutline16` → `IconXxxOutlineRegular`
+// (stroke-weight variants). The old names are gone from the primitives package,
+// so importing them yields undefined and the slot renderer throws React #130.
 import {
-  IconArchiveOutline20,
-  IconCheckOutline16,
-  IconChevronLeftOutline14,
-  IconCloseOutline16,
-  IconDownloadOutline16,
-  IconEditOutline16,
-  IconRightUpOutline16,
-  IconSearchOutline16,
-  IconTrashOutline16,
+  IconArchiveOutlineRegular,
+  IconCheckOutlineRegular,
+  IconChevronLeftOutlineRegular,
+  IconCloseOutlineRegular,
+  IconDownloadOutlineRegular,
+  IconEditOutlineRegular,
+  IconRightUpOutlineRegular,
+  IconSearchOutlineRegular,
+  IconTrashOutlineRegular,
   Tooltip,
 } from "@deepseek-ai/dsh-client-ui-primitives";
 import { TYPERT_REMOTE } from "../../lib/typert.remote-client.js";
@@ -551,7 +554,7 @@ function BookmarkAction({ messageId, sessionId, ensure, bookmark, update, remove
           onPointerEnter={seed}
           onClick={onToggle}
         >
-          <IconArchiveOutline20 size={16} />
+          <IconArchiveOutlineRegular size={16} />
         </button>
       </Tooltip>
       {item !== void 0 && editorOpen && (
@@ -617,7 +620,7 @@ function BookmarkCenterToggle({ ensure, useBookmarks, t }) {
         centerOpen.toggle();
       }}
     >
-      <IconArchiveOutline20 size={16} />
+      <IconArchiveOutlineRegular size={16} />
       <span className={css.footerLabel}>{t("center.title")}</span>
     </button>
   );
@@ -737,16 +740,16 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
     <div className={css.overlay} role="dialog" aria-label={t("center.title")}>
       <div className={css.head}>
         <button type="button" className={css.back} onClick={onClose}>
-          <IconChevronLeftOutline14 />
+          <IconChevronLeftOutlineRegular />
           <span>{t("center.back")}</span>
         </button>
         <span className={css.headIcon}>
-          <IconArchiveOutline20 size={18} />
+          <IconArchiveOutlineRegular size={18} />
         </span>
         <span className={css.title}>{t("center.title")}</span>
         <span className={css.count}>{String(items.length)}</span>
         <button type="button" className={css.close} aria-label={t("note.cancel")} onClick={onClose}>
-          <IconCloseOutline16 />
+          <IconCloseOutlineRegular />
         </button>
       </div>
       <div className={css.body}>
@@ -755,7 +758,7 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
             <div className={css.toolbarRow}>
               <label className={css.search}>
                 <span className={css.searchIcon}>
-                  <IconSearchOutline16 />
+                  <IconSearchOutlineRegular />
                 </span>
                 <input
                   className={css.searchInput}
@@ -766,7 +769,7 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
                 />
               </label>
               <button type="button" className={css.export} disabled={items.length === 0} onClick={exportMarkdown}>
-                <IconDownloadOutline16 />
+                <IconDownloadOutlineRegular />
                 {t("center.export")}
               </button>
             </div>
@@ -794,7 +797,7 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
             {view.status !== "loading" && items.length === 0 && (
               <div className={css.empty}>
                 <span className={css.emptyIcon}>
-                  <IconArchiveOutline20 size={32} />
+                  <IconArchiveOutlineRegular size={32} />
                 </span>
                 <span>{t("center.empty")}</span>
               </div>
@@ -844,22 +847,22 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
                     {isEditing ? (
                       <>
                         <button type="button" className={css.iconBtn} disabled={isPending} onClick={() => saveEdit(item)} aria-label={t("note.save")}>
-                          <IconCheckOutline16 />
+                          <IconCheckOutlineRegular />
                         </button>
                         <button type="button" className={css.iconBtn} onClick={() => setEditingKey(null)} aria-label={t("note.cancel")}>
-                          <IconCloseOutline16 />
+                          <IconCloseOutlineRegular />
                         </button>
                       </>
                     ) : (
                       <>
                         <button type="button" className={css.iconBtn} onClick={() => jumpTo(item.sessionId)} aria-label={t("action.jump")} title={t("action.jump")}>
-                          <IconRightUpOutline16 />
+                          <IconRightUpOutlineRegular />
                         </button>
                         <button type="button" className={css.iconBtn} onClick={() => startEdit(item)} aria-label={t("center.editNote")} title={t("center.editNote")}>
-                          <IconEditOutline16 />
+                          <IconEditOutlineRegular />
                         </button>
                         <button type="button" className={css.iconBtn} disabled={isPending} onClick={() => deleteItem(item)} aria-label={t("action.delete")} title={t("action.delete")}>
-                          <IconTrashOutline16 />
+                          <IconTrashOutlineRegular />
                         </button>
                       </>
                     )}
