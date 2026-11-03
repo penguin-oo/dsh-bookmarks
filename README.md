@@ -66,6 +66,11 @@ One npm package hosts both halves of the plugin:
 
 ## Development
 
+The per-reply note/tag editor uses a native DSH modal so it cannot stretch or
+be clipped by the message action strip. The bookmark center portals to the page
+root, clears desktop window chrome, and overrides ordinary-dialog size caps
+from themes such as Claude Style. Search and export wrap in narrow windows.
+
 ```sh
 npm install            # zod + esbuild (dev only)
 npm run build          # bundles src/client into lib/client.js

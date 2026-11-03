@@ -7,6 +7,7 @@
 //   `shell.overlay` slot (toggle: sidebar footer button or Alt+B), with
 //   search, tag filter, session jump, inline editing and Markdown export.
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 // dsh 0.2 renamed the icon set: `IconXxxOutline16` → `IconXxxOutlineRegular`
 // (stroke-weight variants). The old names are gone from the primitives package,
 // so importing them yields undefined and the slot renderer throws React #130.
@@ -20,6 +21,7 @@ import {
   IconRightUpOutlineRegular,
   IconSearchOutlineRegular,
   IconTrashOutlineRegular,
+  Modal,
   Tooltip,
 } from "@deepseek-ai/dsh-client-ui-primitives";
 import { TYPERT_REMOTE } from "../../lib/typert.remote-client.js";
@@ -31,8 +33,10 @@ const cssText = `
 .dshbm_action:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .dshbm_action:disabled{cursor:default;opacity:.4}
 .dshbm_action[data-active]{color:#4d6bfe}
-.dshbm_editor{align-items:flex-start;gap:6px;display:inline-flex;flex-wrap:wrap}
-.dshbm_field{border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);width:240px;color:var(--dsw-alias-label-primary);font:inherit;resize:vertical;border-radius:8px;padding:6px 8px;font-size:13px}
+.dshbm_editor{display:flex;flex-direction:column;gap:12px;min-width:0}
+.dshbm_editorActions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+.dshbm_editorDialog{width:min(440px,100%);max-height:100%;overflow-y:auto}
+.dshbm_field{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);width:100%;min-width:0;max-width:100%;color:var(--dsw-alias-label-primary);font:inherit;resize:vertical;border-radius:8px;padding:8px 10px;font-size:13px}
 .dshbm_field:focus{outline:1px solid #4d6bfe}
 .dshbm_btn{cursor:pointer;border:none;border-radius:14px;height:28px;padding:0 10px;font-size:13px}
 .dshbm_btn:disabled{cursor:default;opacity:.4}
@@ -47,8 +51,12 @@ const cssText = `
 .dshbm_footerLabel{font-size:13px}
 .dshbm_footerAction:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .dshbm_badge{display:none}
-.dshbm_overlay{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;background:var(--dsw-alias-bg-base);pointer-events:auto;color:var(--dsw-alias-label-primary)}
-.dshbm_head{display:flex;align-items:center;gap:10px;padding:16px 32px;background:var(--dsw-alias-bg-layer-1);border-bottom:1px solid var(--dsw-alias-border-l2)}
+.dshbm_overlay{position:fixed;inset:var(--dsh-frame-chrome-top,0px) 0 0;z-index:1000;display:flex;flex-direction:column;overflow:hidden;background:var(--dsw-alias-bg-base);pointer-events:auto;color:var(--dsw-alias-label-primary);-webkit-app-region:no-drag}
+/* Themes cap ordinary dialogs; this full-window surface must fill its inset. */
+.dshbm_overlay[role="dialog"]{max-width:none!important;max-height:none!important}
+.dshbm_overlay *{box-sizing:border-box}
+.dshbm_head{flex:none;display:flex;align-items:center;gap:10px;padding:16px 24px;background:var(--dsw-alias-bg-layer-1);border-bottom:1px solid var(--dsw-alias-border-l2)}
+html[data-platform='darwin']:not([data-fullscreen]) .dshbm_head{padding-top:calc(16px + var(--dsh-frame-top-clearance,48px))}
 .dshbm_back{display:inline-flex;align-items:center;gap:4px;cursor:pointer;background:0 0;border:none;border-radius:8px;padding:5px 10px 5px 6px;color:var(--dsw-alias-label-secondary);font-size:13px;font-family:inherit}
 .dshbm_back:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .dshbm_headIcon{color:#4d6bfe;display:inline-flex}
@@ -56,11 +64,11 @@ const cssText = `
 .dshbm_count{font-size:12px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-2);border-radius:10px;padding:2px 10px;line-height:18px}
 .dshbm_close{color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:8px;padding:6px;display:inline-flex}
 .dshbm_close:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
-.dshbm_body{flex:1;overflow-y:auto;padding:24px 32px 48px;display:flex;justify-content:center;align-items:flex-start}
+.dshbm_body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:24px 24px 48px;display:flex;justify-content:center;align-items:flex-start}
 .dshbm_inner{width:100%;max-width:860px;display:flex;flex-direction:column;gap:14px}
 .dshbm_toolbar{display:flex;flex-direction:column;gap:10px}
 .dshbm_toolbarRow{display:flex;gap:10px;align-items:center}
-.dshbm_search{position:relative;display:flex;align-items:center;flex:1}
+.dshbm_search{position:relative;display:flex;align-items:center;flex:1;min-width:0}
 .dshbm_searchIcon{position:absolute;left:10px;color:var(--dsw-alias-label-secondary);pointer-events:none}
 .dshbm_searchInput{border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1);width:100%;color:var(--dsw-alias-label-primary);font:inherit;border-radius:8px;padding:7px 10px 7px 32px;font-size:13px}
 .dshbm_searchInput:focus{outline:1px solid #4d6bfe}
@@ -86,11 +94,14 @@ const cssText = `
 .dshbm_export{cursor:pointer;border:none;border-radius:8px;height:32px;padding:0 14px;font-size:13px;font-weight:500;background:#4d6bfe;color:#fff;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .dshbm_export:hover{background:#3a56e4}
 .dshbm_export:disabled{cursor:default;opacity:.5}
+@media(max-width:560px){.dshbm_head{padding-inline:16px}.dshbm_body{padding:16px}.dshbm_toolbarRow{flex-wrap:wrap}.dshbm_search{flex-basis:100%}.dshbm_export{margin-left:auto}.dshbm_card{padding:12px}}
 `;
 
 const css = {
   action: "dshbm_action",
   editor: "dshbm_editor",
+  editorActions: "dshbm_editorActions",
+  editorDialog: "dshbm_editorDialog",
   field: "dshbm_field",
   btn: "dshbm_btn",
   save: "dshbm_save",
@@ -98,6 +109,7 @@ const css = {
   danger: "dshbm_danger",
   failure: "dshbm_failure",
   footerAction: "dshbm_footerAction",
+  footerLabel: "dshbm_footerLabel",
   badge: "dshbm_badge",
   overlay: "dshbm_overlay",
   head: "dshbm_head",
@@ -470,7 +482,7 @@ class BookmarkStore {
 
 // ── components ───────────────────────────────────────────────────────────────
 
-/** Per-message bookmark action with an inline note/tags editor. */
+/** Per-message bookmark action with a modal note/tags editor. */
 function BookmarkAction({ messageId, sessionId, ensure, bookmark, update, remove, useBookmarks, t }) {
   const item = useBookmarks((view) => view.items.get(keyOf(sessionId, messageId)));
   const loadFailed = useBookmarks((view) => view.status === "error");
@@ -565,9 +577,16 @@ function BookmarkAction({ messageId, sessionId, ensure, bookmark, update, remove
           <IconArchiveOutlineRegular size={16} />
         </button>
       </Tooltip>
-      {item !== void 0 && editorOpen && (
-        <span className={css.editor}>
+      <Modal
+        open={item !== void 0 && editorOpen}
+        title={t("action.edit")}
+        closeLabel={t("note.cancel")}
+        onClose={() => setEditorOpen(false)}
+        className={css.editorDialog}
+      >
+        <div className={css.editor}>
           <textarea
+            data-modal-autofocus
             className={css.field}
             aria-label={t("note.aria")}
             placeholder={t("note.placeholder")}
@@ -582,23 +601,26 @@ function BookmarkAction({ messageId, sessionId, ensure, bookmark, update, remove
             value={draftTags}
             onChange={(event) => setDraftTags(event.target.value)}
           />
-          <button type="button" className={`${css.btn} ${css.save}`} disabled={pending} onClick={onSave}>
-            {t("note.save")}
-          </button>
-          <button type="button" className={`${css.btn} ${css.danger}`} disabled={pending} onClick={onDelete}>
-            {t("action.delete")}
-          </button>
-          <button type="button" className={`${css.btn} ${css.cancel}`} onClick={() => setEditorOpen(false)}>
-            {t("note.cancel")}
-          </button>
-        </span>
-      )}
+          <div className={css.editorActions}>
+            <button type="button" className={`${css.btn} ${css.save}`} disabled={pending} onClick={onSave}>
+              {t("note.save")}
+            </button>
+            <button type="button" className={`${css.btn} ${css.danger}`} disabled={pending} onClick={onDelete}>
+              {t("action.delete")}
+            </button>
+            <button type="button" className={`${css.btn} ${css.cancel}`} onClick={() => setEditorOpen(false)}>
+              {t("note.cancel")}
+            </button>
+          </div>
+          {failure !== null && <div className={css.failure} role="status">{failure}</div>}
+        </div>
+      </Modal>
       {failure === null && loadFailed && (
         <span className={css.failure} role="status">
           {t("error.load")}
         </span>
       )}
-      {failure !== null && (
+      {failure !== null && !editorOpen && (
         <span className={css.failure} role="status">
           {failure}
         </span>
@@ -646,7 +668,9 @@ function BookmarkCenterEntry({ ensure, remove, update, jumpTo, useBookmarks, t }
     }
   }, [open, ensure]);
   if (!open) return null;
-  return (
+  // Full-screen surfaces portal beside the app root so shell clipping and
+  // Electron window-drag regions cannot cover their controls.
+  return createPortal(
     <BookmarkCenterOverlay
       t={t}
       view={view}
@@ -654,7 +678,8 @@ function BookmarkCenterEntry({ ensure, remove, update, jumpTo, useBookmarks, t }
       update={update}
       jumpTo={jumpTo}
       onClose={() => centerOpen.set(false)}
-    />
+    />,
+    document.body,
   );
 }
 
