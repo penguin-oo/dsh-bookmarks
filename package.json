@@ -73,10 +73,12 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@deepseek-ai/dsh-typert-loader": "^0.2.1-rc.5",
     "esbuild": "^0.25.12",
     "puppeteer-core": "^24.43.1"
   },
   "scripts": {
-    "build": "node scripts/build-client.mjs"
+    "build": "node scripts/build-client.mjs",
+    "test": "node scripts/smoke.mjs && node --test scripts/host.test.mjs"
   }
 }

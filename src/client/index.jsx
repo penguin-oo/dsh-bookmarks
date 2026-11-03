@@ -246,6 +246,14 @@ function carrierFailure(error) {
   return { ok: false, error: { code: error.code, message: error.message } };
 }
 
+/** Keep translated business failures, but preserve infrastructure diagnostics. */
+function failureText(t, error) {
+  const code = error?.code ?? "error.generic";
+  const key = describe(code);
+  if (key !== code || code === "error.generic") return t(key);
+  return error?.message && error.message !== code ? `${code}: ${error.message}` : code;
+}
+
 /** Open/close cell shared by the sidebar toggle, the overlay, and Alt+B. */
 const centerOpen = (() => {
   let open = false;
@@ -489,7 +497,7 @@ function BookmarkAction({ messageId, sessionId, ensure, bookmark, update, remove
         setFailure(null);
         return;
       }
-      setFailure(t(describe(result.error?.code ?? "error.generic")));
+      setFailure(failureText(t, result.error));
     },
     [t],
   );
@@ -690,7 +698,7 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
       setEditingKey(null);
       return;
     }
-    setFailure(t(describe(result.error?.code ?? "error.generic")));
+    setFailure(failureText(t, result.error));
     if (editingKey !== key) setEditingKey(null);
   };
 

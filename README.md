@@ -69,6 +69,7 @@ One npm package hosts both halves of the plugin:
 ```sh
 npm install            # zod + esbuild (dev only)
 npm run build          # bundles src/client into lib/client.js
+npm test               # Remote manifest checks and bookmark regression tests
 ```
 
 `lib/client.js` is committed and shipped; no build step runs on install.

@@ -69,9 +69,18 @@ bundle 行暴露三个可选上限：
 ```sh
 npm install            # zod + esbuild（仅开发）
 npm run build          # 将 src/client 打包为 lib/client.js
+npm test               # Remote 清单校验及收藏读写回归测试
 ```
 
 `lib/client.js` 随包发布，安装时无构建步骤。
+
+### DSH 0.2.1 适配
+
+DSH 0.2.1 的会话持久化改用 `stat/open` 和只读 handle，移除了旧的
+`listSnapshots/inspect/readFrom` 接口。旧插件在收藏时调用这些接口会抛出
+`TypeError`，最终显示为 `gateway/internal`。本版本自动选择新旧接口，读取后
+关闭 handle，并在收藏当前会话时先刷新日志、核验持久化前缀，再写入收藏。
+基础设施错误也会显示具体消息，方便排查。
 
 ## 已知限制
 
