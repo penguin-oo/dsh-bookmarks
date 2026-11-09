@@ -49,7 +49,8 @@
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
         "@deepseek-ai/dsh-client-locale",
-        "@deepseek-ai/dsh-client-ui-conversation"
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-workspace"
       ]
     },
     "compatibility": {
@@ -58,7 +59,8 @@
         "0.1.3-alpha.1": "compatible",
         "0.1.3-alpha.2": "compatible",
         "0.2.0-rc.1": "compatible",
-        "0.2.0-rc.2": "compatible"
+        "0.2.0-rc.2": "compatible",
+        "0.2.2-rc.1": "compatible"
       }
     }
   },
@@ -79,6 +81,6 @@
   },
   "scripts": {
     "build": "node scripts/build-client.mjs",
-    "test": "node scripts/smoke.mjs && node --test scripts/host.test.mjs"
+    "test": "node scripts/smoke.mjs && node --test scripts/*.test.mjs"
   }
 }

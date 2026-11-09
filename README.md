@@ -17,7 +17,7 @@ Bookmark assistant replies in [DeepSeek Harness](https://github.com/deepseek-ai/
 - **Per-message bookmark** — an archive button on each finalized assistant reply (right next to the 👍/👎 feedback buttons), with an inline editor for a note and comma-separated tags.
 - **Server-derived snippet** — the bookmark stores a text preview of the actual reply, so the center stays useful even without a note.
 - **Cross-session center** — one panel listing bookmarks from all sessions and workspaces, with full-text search, tag filter, inline editing and deletion.
-- **Jump back** — every entry opens its session in one click.
+- **Jump back** — open the saved reply, loading older history when necessary.
 - **Markdown export** — one click downloads all bookmarks as `dsh-bookmarks.md`.
 - **Keyboard** — `Alt+B` toggles the center from anywhere.
 - **Safe writes** — per-item compare-and-set versions (multi-tab safe), server-side validation, and durable storage via the DSH storage domain.
@@ -82,7 +82,6 @@ npm test               # Remote manifest checks and bookmark regression tests
 ## Limitations
 
 - Bookmarks are stored in one global row: fine for personal use, not a shared multi-user store.
-- The center panel jumps to the bookmarked *session*; it does not auto-scroll to the exact message yet.
 - The panel toggle lives in the sidebar footer; use `Alt+B` when the sidebar is collapsed.
 
 ## License

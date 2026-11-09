@@ -25,6 +25,7 @@ import {
   Tooltip,
 } from "@deepseek-ai/dsh-client-ui-primitives";
 import { TYPERT_REMOTE } from "../../lib/typert.remote-client.js";
+import { jumpToBookmark } from "./jump.js";
 
 // ── styles ───────────────────────────────────────────────────────────────────
 
@@ -33,6 +34,7 @@ const cssText = `
 .dshbm_action:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .dshbm_action:disabled{cursor:default;opacity:.4}
 .dshbm_action[data-active]{color:#4d6bfe}
+.dshbm_landing{scroll-margin-block-start:64px;outline:2px solid #4d6bfe;outline-offset:3px;border-radius:6px}
 .dshbm_editor{display:flex;flex-direction:column;gap:12px;min-width:0}
 .dshbm_editorActions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px}
 .dshbm_editorDialog{width:min(440px,100%);max-height:100%;overflow-y:auto}
@@ -158,7 +160,7 @@ const zh = {
   "action.remove": "取消收藏",
   "action.edit": "编辑收藏",
   "action.delete": "删除",
-  "action.jump": "跳转到会话",
+  "action.jump": "跳转到收藏的回复",
   "note.placeholder": "为什么收藏这条回复？（可选）",
   "note.aria": "收藏备注",
   "note.save": "保存",
@@ -181,6 +183,8 @@ const zh = {
   "error.generic": "收藏保存失败",
   "error.session-gone": "会话已不存在",
   "error.target-gone": "目标消息不存在",
+  "error.jump": "无法打开收藏的回复",
+  "error.jump-target": "无法在会话中找到收藏的回复",
   "error.note-blank": "备注不能为空",
   "error.note-too-large": "备注太长",
   "error.tags-invalid": "标签无效",
@@ -191,7 +195,7 @@ const en = {
   "action.remove": "Remove bookmark",
   "action.edit": "Edit bookmark",
   "action.delete": "Delete",
-  "action.jump": "Open session",
+  "action.jump": "Jump to bookmarked reply",
   "note.placeholder": "Why bookmark this reply? (optional)",
   "note.aria": "Bookmark note",
   "note.save": "Save",
@@ -214,6 +218,8 @@ const en = {
   "error.generic": "Could not save bookmark",
   "error.session-gone": "The session no longer exists",
   "error.target-gone": "The target message no longer exists",
+  "error.jump": "Could not open the bookmarked reply",
+  "error.jump-target": "Could not find the bookmarked reply in this session",
   "error.note-blank": "The note must not be blank",
   "error.note-too-large": "The note is too long",
   "error.tags-invalid": "Invalid tags",
@@ -569,6 +575,8 @@ function BookmarkAction({ messageId, sessionId, ensure, bookmark, update, remove
           aria-label={label}
           aria-pressed={item !== void 0}
           data-active={item !== void 0 || undefined}
+          data-dshbm-session={sessionId}
+          data-dshbm-message={messageId}
           disabled={pending}
           onFocus={seed}
           onPointerEnter={seed}
@@ -692,6 +700,9 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
   const [draftTags, setDraftTags] = useState("");
   const [pendingKey, setPendingKey] = useState(null);
   const [failure, setFailure] = useState(null);
+  const [jumping, setJumping] = useState(false);
+  const jumpController = useRef(null);
+  useEffect(() => () => jumpController.current?.abort(), []);
 
   const items = useMemo(() => [...view.items.values()], [view]);
   const allTags = useMemo(() => {
@@ -747,6 +758,28 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
   const deleteItem = (item) => {
     setPendingKey(keyOf(item.sessionId, item.messageId));
     remove(item.sessionId, item.messageId).then((result) => settle(keyOf(item.sessionId, item.messageId), result));
+  };
+
+  const openBookmark = async (item) => {
+    if (jumpController.current !== null) return;
+    const controller = new AbortController();
+    jumpController.current = controller;
+    setFailure(null);
+    setJumping(true);
+    try {
+      const found = await jumpTo(item, controller.signal);
+      if (controller.signal.aborted) return;
+      if (found) onClose();
+      else setFailure(t("error.jump-target"));
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        console.error("[dsh-bookmarks] jump failed:", error);
+        setFailure(t("error.jump"));
+      }
+    } finally {
+      jumpController.current = null;
+      if (!controller.signal.aborted) setJumping(false);
+    }
   };
 
   const exportMarkdown = () => {
@@ -888,7 +921,7 @@ function BookmarkCenterOverlay({ t, view, remove, update, jumpTo, onClose }) {
                       </>
                     ) : (
                       <>
-                        <button type="button" className={css.iconBtn} onClick={() => jumpTo(item.sessionId)} aria-label={t("action.jump")} title={t("action.jump")}>
+                        <button type="button" className={css.iconBtn} disabled={jumping} onClick={() => openBookmark(item)} aria-label={t("action.jump")} title={t("action.jump")}>
                           <IconRightUpOutlineRegular />
                         </button>
                         <button type="button" className={css.iconBtn} onClick={() => startEdit(item)} aria-label={t("center.editNote")} title={t("center.editNote")}>
@@ -976,6 +1009,11 @@ async function apply(ctx) {
     };
   });
 
+  ctx.slots.inject("conversation.session.header.actions", () => ctx.slots.register(
+    { name: "conversation.session.header.actions", id: "bookmarks-session-anchor" },
+    ({ sessionId }) => <span hidden data-dshbm-header="" data-dshbm-session={sessionId} />,
+  ));
+
   ctx.slots.inject("sidebar.footer.action", () => {
     const dispose = ctx.slots.register(
       {
@@ -1007,10 +1045,7 @@ async function apply(ctx) {
           ensure: () => store.ensure(),
           update: (sessionId, messageId, note, tags) => store.update(sessionId, messageId, note, tags),
           remove: (sessionId, messageId) => store.remove(sessionId, messageId),
-          jumpTo: (sessionId) => {
-            centerOpen.set(false);
-            ctx.sessions.open(sessionId);
-          },
+          jumpTo: (item, signal) => jumpToBookmark(ctx, item, signal),
         }),
       },
       BookmarkCenterEntry,
