@@ -7,6 +7,7 @@
 //   `shell.overlay` slot (toggle: sidebar footer button or Alt+B), with
 //   search, tag filter, session jump, inline editing and Markdown export.
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 // dsh 0.2 renamed the icon set: `IconXxxOutline16` → `IconXxxOutlineRegular`
 // (stroke-weight variants). The old names are gone from the primitives package,
 // so importing them yields undefined and the slot renderer throws React #130.
@@ -47,7 +48,7 @@ const cssText = `
 .dshbm_footerLabel{font-size:13px}
 .dshbm_footerAction:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .dshbm_badge{display:none}
-.dshbm_overlay{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;background:var(--dsw-alias-bg-base);pointer-events:auto;color:var(--dsw-alias-label-primary)}
+.dshbm_overlay{position:fixed;inset:0;z-index:120;box-sizing:border-box;padding-top:var(--dsh-frame-overlay-top,0px);display:flex;flex-direction:column;background:var(--dsw-alias-bg-base);pointer-events:auto;color:var(--dsw-alias-label-primary)}
 .dshbm_head{display:flex;align-items:center;gap:10px;padding:16px 32px;background:var(--dsw-alias-bg-layer-1);border-bottom:1px solid var(--dsw-alias-border-l2)}
 .dshbm_back{display:inline-flex;align-items:center;gap:4px;cursor:pointer;background:0 0;border:none;border-radius:8px;padding:5px 10px 5px 6px;color:var(--dsw-alias-label-secondary);font-size:13px;font-family:inherit}
 .dshbm_back:hover{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
@@ -638,7 +639,7 @@ function BookmarkCenterEntry({ ensure, remove, update, jumpTo, useBookmarks, t }
     }
   }, [open, ensure]);
   if (!open) return null;
-  return (
+  return createPortal(
     <BookmarkCenterOverlay
       t={t}
       view={view}
@@ -646,7 +647,8 @@ function BookmarkCenterEntry({ ensure, remove, update, jumpTo, useBookmarks, t }
       update={update}
       jumpTo={jumpTo}
       onClose={() => centerOpen.set(false)}
-    />
+    />,
+    document.body,
   );
 }
 
